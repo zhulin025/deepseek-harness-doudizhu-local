@@ -18,60 +18,35 @@
 - 默认监听 `127.0.0.1`，邀请链接不能供外网 Agent 使用。
 - 不包含 SQLite 持久化、公网地址配置、跨设备同步或服务器部署模板。
 
-## 安装
+## 一键安装
 
 此插件使用 DeepSeek Harness 的 `workspace:^` 依赖，需要放入兼容版本的 Harness 源码工作区。
 
-假设两个仓库位于同一父目录：
+下载插件并执行安装器：
 
 ```bash
-export HARNESS_DIR=/path/to/deepseek-harness
-export PLUGIN_DIR=/path/to/deepseek-harness-doudizhu-local
-
-rsync -a "$PLUGIN_DIR/packages/game/doudizhu/" "$HARNESS_DIR/packages/game/doudizhu/"
-rsync -a "$PLUGIN_DIR/packages/client/ui-doudizhu/" "$HARNESS_DIR/packages/client/ui-doudizhu/"
+git clone https://github.com/zhulin025/deepseek-harness-doudizhu-local.git
+cd deepseek-harness-doudizhu-local
+./install.sh /path/to/deepseek-harness
 ```
 
-在 `packages/bundle/web-app/package.json` 的 `dependencies` 中加入：
+安装器会自动复制两个插件包、注册 Web bundle 和 TypeScript 工程、运行 `pnpm install`，并构建 Host 与 Client。重复执行不会产生重复配置。
 
-```json
-"@deepseek-ai/dsh-client-ui-doudizhu": "workspace:^",
-"@deepseek-ai/dsh-doudizhu": "workspace:^"
-```
-
-在 `packages/bundle/web-app/cordis.patch.yml` 的 Web Server 条目之后加入：
-
-```yaml
-- id: doudizhu
-  name: '@deepseek-ai/dsh-doudizhu'
-  config:
-    localOnly: true
-
-- id: client-ui-doudizhu
-  name: '@deepseek-ai/dsh-client-ui-doudizhu'
-```
-
-在根目录 `tsconfig.host.json` 的 `references` 中加入：
-
-```json
-{ "path": "./packages/game/doudizhu" }
-```
-
-在根目录 `tsconfig.client.json` 的 `references` 中加入：
-
-```json
-{ "path": "./packages/client/ui-doudizhu" }
-```
-
-安装并构建：
+如果只想写入配置和复制文件、暂时不安装依赖或构建，可以使用：
 
 ```bash
-cd "$HARNESS_DIR"
-pnpm install
-pnpm exec vitest run packages/game/doudizhu/tests
-pnpm run build:lib:host
-pnpm run build:lib:client
+./install.sh /path/to/deepseek-harness --no-build
 ```
+
+安装器会拒绝覆盖不是由它安装的同名插件目录。
+
+## 一键卸载
+
+```bash
+./uninstall.sh /path/to/deepseek-harness
+```
+
+卸载器只删除安装器添加的依赖、Cordis 条目、TypeScript references、安装记录和两个斗地主插件目录，不修改其他 Harness 配置。重复执行卸载命令也是安全的。
 
 ## 启动
 
